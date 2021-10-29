@@ -1,8 +1,10 @@
 #!/bin/bash
 
-head -n 3 Tux.ppm > Tux.header
-tail -n +4 Tux.ppm > Tux.body
+FILE_NAME=$1
+
+head -n 3 "$FILE_NAME.ppm" > "$FILE_NAME.header"
+tail -n +4 "$FILE_NAME.ppm" > "$FILE_NAME.body"
 # encrypt Tux.body with your ECB implementation, save the encrypted file as Tux.body.ecb
-python3 P2.py
-cat Tux.header Tux.body.gcm > Tux.gcm.ppm
-cat Tux.header Tux.boby.gcm.dec > Tux.gcm.dec.ppm
+python3 P2.py $FILE_NAME.body
+cat "$FILE_NAME.header" "$FILE_NAME.body.enc" > "$FILE_NAME.enc.ppm"
+cat "$FILE_NAME.header" "$FILE_NAME.body.dec" > "$FILE_NAME.dec.ppm"
