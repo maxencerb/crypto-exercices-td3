@@ -1,5 +1,6 @@
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import padding
 import os
 import sys
 
@@ -21,15 +22,12 @@ def myAES_decrypt(key: bytes, ct: bytes):
     pt = decryptor.update(ct) + decryptor.finalize()
     return pt
 
-def gen_key():
+def gen_key() -> bytes:
     key = os.urandom(16)
-    print(key)
     return key
 
 def encrypt(message: bytes, key: bytes):
-    if len(message) % 16 != 0:
-        # Pad key to 16 bytes
-        message += b'\x00' * (16 - len(key) % 16)
+    message = padd_bytes(message)
     ct = b''
     for i in range(0, len(message), 16):
         ct += myAES(key, message[i:i+16])
@@ -38,8 +36,19 @@ def encrypt(message: bytes, key: bytes):
 def decrypt(ciphertext: bytes, key: bytes):
     pt = b''
     for i in range(0, len(ciphertext), 16):
-        pt += myAES(key, ciphertext[i:i+16])
+        pt += myAES_decrypt(key, ciphertext[i:i+16])
+    pt = unpadd_bytes(pt)
     return pt
+
+def padd_bytes(b: bytes):
+    padder = padding.PKCS7(128).padder()
+    padded_data = padder.update(b) + padder.finalize()
+    return padded_data
+
+def unpadd_bytes(b: bytes):
+    unpadder = padding.PKCS7(128).unpadder()
+    unpadded_data = unpadder.update(b) + unpadder.finalize()
+    return unpadded_data
 
 def main():
     if len(sys.argv) != 2:
